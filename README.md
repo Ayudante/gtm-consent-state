@@ -1,0 +1,1 @@
+# gtm-consent-state
