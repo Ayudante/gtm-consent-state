@@ -14,7 +14,9 @@ ___INFO___
   "version": 1,
   "securityGroups": [],
   "displayName": "GTM Consent State",
-  "categories": ["UTILITY"],
+  "categories": [
+    "UTILITY"
+  ],
   "description": "Get the status of each type of Consent Mode implemented in Google Tag Manager.",
   "containerContexts": [
     "WEB"
@@ -49,24 +51,32 @@ ___TEMPLATE_PARAMETERS___
     "macrosInSelect": false,
     "selectItems": [
       {
-        "value": "ad",
+        "value": "ad_storage",
         "displayValue": "ad_storage"
       },
       {
-        "value": "analytics",
+        "value": "analytics_storage",
         "displayValue": "analytics_storage"
       },
       {
-        "value": "functional",
-        "displayValue": "functional_storage"
+        "value": "functionality_storage",
+        "displayValue": "functionality_storage"
       },
       {
-        "value": "personalization",
+        "value": "personalization_storage",
         "displayValue": "personalization_storage"
       },
       {
-        "value": "security",
+        "value": "security_storage",
         "displayValue": "security_storage"
+      },
+      {
+        "value": "ad_user_data",
+        "displayValue": "ad_user_data"
+      },
+      {
+        "value": "ad_personalization",
+        "displayValue": "ad_personalization"
       },
       {
         "value": "custom",
@@ -76,7 +86,7 @@ ___TEMPLATE_PARAMETERS___
     "simpleValueType": true,
     "alwaysInSummary": true,
     "help": "If you want to get a type that is not provided by default, select the blank box and enter the name of the type you want to get.",
-    "defaultValue": "ad",
+    "defaultValue": "ad_storage",
     "enablingConditions": [
       {
         "paramName": "selectTarget",
@@ -125,30 +135,45 @@ ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 // 初期設定
 const queryPermission = require('queryPermission');
 const isConsentGranted = require('isConsentGranted');
-const getTypeName = {
-	'ad': 'ad_storage',
-	'analytics': 'analytics_storage',
-	'functional': 'functional_storage',
-	'personalization': 'personalization_storage',
-	'security': 'security_storage',
-	'custom': data.customName
+const Object = require('Object');
+
+const consentTypesNames = {
+  defaultConsentTypesNames: {
+    'ad_storage': 'ad_storage',
+    'analytics_storage': 'analytics_storage',
+    'functionality_storage': 'functionality_storage',
+    'personalization_storage': 'personalization_storage',
+    'security_storage': 'security_storage',
+    'ad_user_data': 'ad_user_data',
+    'ad_personalization': 'ad_personalization',
+  },
+  customConsentTypeName: {
+    'custom': data.customName
+  }
 };
 
 // 取得処理
-switch(data.selectTarget){
-	case 'all':
-		if(queryPermission('access_consent', 'ad_storage', 'read') && queryPermission('access_consent', 'analytics_storage', 'read') && queryPermission('access_consent', 'functional_storage', 'read') && queryPermission('access_consent', 'personalization_storage', 'read') && queryPermission('access_consent', 'security_storage', 'read')){
-			return {
-				ad_storage: isConsentGranted('ad_storage'),
-				analytics_storage: isConsentGranted('analytics_storage'),
-				functional_storage: isConsentGranted('functional_storage'),
-				personalization_storage: isConsentGranted('personalization_storage'),
-				security_storage: isConsentGranted('security_storage')
-			};
-		}
-		break;
-	default:
-		if(queryPermission('access_consent', getTypeName[data.getType], 'read')) return isConsentGranted(getTypeName[data.getType]);
+switch (data.selectTarget) {
+  case 'all':
+    const defaultConsentTypesNames = Object.keys(consentTypesNames.defaultConsentTypesNames);
+    const canQueryAllDefaultConsentTypes = defaultConsentTypesNames.every((consentType) => {
+      return queryPermission('access_consent', consentType, 'read');
+    });
+  	if (canQueryAllDefaultConsentTypes) {
+      return defaultConsentTypesNames.reduce((obj, consentType) => {
+        obj[consentType] = isConsentGranted(consentType);
+        return obj;
+      }, {});
+  	}
+  	break;
+  default:
+    const specificConsentType = 
+            consentTypesNames.defaultConsentTypesNames[data.getType] ||
+            consentTypesNames.customConsentTypeName[data.getType];
+    const canQuerySpecificConsentType = queryPermission('access_consent', specificConsentType, 'read');
+  	if (canQuerySpecificConsentType) {
+      return isConsentGranted(specificConsentType);
+    }
 }
 
 // 例外処理
@@ -251,7 +276,7 @@ ___WEB_PERMISSIONS___
                 "mapValue": [
                   {
                     "type": 1,
-                    "string": "functional_storage"
+                    "string": "functionality_storage"
                   },
                   {
                     "type": 8,
@@ -324,6 +349,68 @@ ___WEB_PERMISSIONS___
                     "boolean": false
                   }
                 ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "consentType"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "ad_personalization"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
+              },
+              {
+                "type": 3,
+                "mapKey": [
+                  {
+                    "type": 1,
+                    "string": "consentType"
+                  },
+                  {
+                    "type": 1,
+                    "string": "read"
+                  },
+                  {
+                    "type": 1,
+                    "string": "write"
+                  }
+                ],
+                "mapValue": [
+                  {
+                    "type": 1,
+                    "string": "ad_user_data"
+                  },
+                  {
+                    "type": 8,
+                    "boolean": true
+                  },
+                  {
+                    "type": 8,
+                    "boolean": false
+                  }
+                ]
               }
             ]
           }
@@ -353,12 +440,12 @@ scenarios:
 
     // Verify that the variable returns a result.
     assertThat(variableResult).isNotEqualTo(undefined);
-- name: ad
+- name: ad_storage
   code: |-
     const mockData = {
       // Mocked field values
       selectTarget: 'any',
-      getType: 'ad'
+      getType: 'ad_storage'
     };
 
     // Call runCode to run the template's code.
@@ -366,12 +453,12 @@ scenarios:
 
     // Verify that the variable returns a result.
     assertThat(variableResult).isNotEqualTo(undefined);
-- name: analytics
+- name: analytics_storage
   code: |-
     const mockData = {
       // Mocked field values
       selectTarget: 'any',
-      getType: 'analytics'
+      getType: 'analytics_storage'
     };
 
     // Call runCode to run the template's code.
@@ -379,12 +466,12 @@ scenarios:
 
     // Verify that the variable returns a result.
     assertThat(variableResult).isNotEqualTo(undefined);
-- name: functional
+- name: functionality_storage
   code: |-
     const mockData = {
       // Mocked field values
       selectTarget: 'any',
-      getType: 'functional'
+      getType: 'functionality_storage'
     };
 
     // Call runCode to run the template's code.
@@ -392,12 +479,12 @@ scenarios:
 
     // Verify that the variable returns a result.
     assertThat(variableResult).isNotEqualTo(undefined);
-- name: personalization
+- name: personalization_storage
   code: |-
     const mockData = {
       // Mocked field values
       selectTarget: 'any',
-      getType: 'personalization'
+      getType: 'personalization_storage'
     };
 
     // Call runCode to run the template's code.
@@ -405,12 +492,38 @@ scenarios:
 
     // Verify that the variable returns a result.
     assertThat(variableResult).isNotEqualTo(undefined);
-- name: security
+- name: security_storage
   code: |-
     const mockData = {
       // Mocked field values
       selectTarget: 'any',
-      getType: 'security'
+      getType: 'security_storage'
+    };
+
+    // Call runCode to run the template's code.
+    let variableResult = runCode(mockData);
+
+    // Verify that the variable returns a result.
+    assertThat(variableResult).isNotEqualTo(undefined);
+- name: ad_personalization
+  code: |-
+    const mockData = {
+      // Mocked field values
+      selectTarget: 'any',
+      getType: 'ad_personalization'
+    };
+
+    // Call runCode to run the template's code.
+    let variableResult = runCode(mockData);
+
+    // Verify that the variable returns a result.
+    assertThat(variableResult).isNotEqualTo(undefined);
+- name: ad_user_data
+  code: |-
+    const mockData = {
+      // Mocked field values
+      selectTarget: 'any',
+      getType: 'ad_user_data'
     };
 
     // Call runCode to run the template's code.
@@ -437,5 +550,3 @@ scenarios:
 ___NOTES___
 
 Created on 2021/6/21 12:59:49
-
-
