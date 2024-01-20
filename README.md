@@ -7,16 +7,18 @@ In the variable to be registered after importing the template, select whether yo
 
 ### Get All types
 Get types: "All types"  
-Return value:  
+Return value:
+```js
 {  
-	ad_storage: true/false,  
-	analytics_storage: true/false,  
-	functionality_storage: true/false,  
-	personalization_storage: true/false,  
-	security_storage: true/false,
-	ad_user_data: true/false,
-	ad_personalization: true/false
+  ad_storage: true/false,  
+  analytics_storage: true/false,  
+  functionality_storage: true/false,  
+  personalization_storage: true/false,  
+  security_storage: true/false,
+  ad_user_data: true/false,
+  ad_personalization: true/false
 }
+```
 
 Gets the 7 statuses that are provided by default as consent types in GTM in Object format.
 The value of each property will be true or false depending on the consent status.
