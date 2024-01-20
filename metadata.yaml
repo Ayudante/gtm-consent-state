@@ -15,7 +15,7 @@
 homepage: "https://ayudante.jp/"
 documentation: "https://github.com/Ayudante/gtm-consent-state/blob/main/README.md"
 versions:
-  # Lastest version
+  # Latest version
   - sha: ab4918f64faaa0f47788dadecf193db40c8fc1f5
     changenotes:
       Added ad_personalization and ad_user_data.
