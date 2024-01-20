@@ -25,7 +25,7 @@ The value of each property will be true or false depending on the consent status
 
 ### Get Any type
 Get types: "Any type"  
-Return value: true/false
+Return value: `true/false`
 
 Get the status of the selected agreement type as true or false.
 
