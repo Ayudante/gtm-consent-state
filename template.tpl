@@ -132,52 +132,62 @@ ___TEMPLATE_PARAMETERS___
 
 ___SANDBOXED_JS_FOR_WEB_TEMPLATE___
 
-// 初期設定
-const queryPermission = require('queryPermission');
-const isConsentGranted = require('isConsentGranted');
-const Object = require('Object');
+// -------- setup
+// ---- requires
+const queryPermission = require('queryPermission');	// check for permissions.
+const isConsentGranted = require('isConsentGranted');	// check for consent state.
+const copyFromDataLayer = require('copyFromDataLayer');	// check for gtm'event.
+const Object = require('Object');	// object's loop processing of object.
 
+// ---- default setting
 const consentTypesNames = {
-  defaultConsentTypesNames: {
-    'ad_storage': 'ad_storage',
-    'analytics_storage': 'analytics_storage',
-    'functionality_storage': 'functionality_storage',
-    'personalization_storage': 'personalization_storage',
-    'security_storage': 'security_storage',
-    'ad_user_data': 'ad_user_data',
-    'ad_personalization': 'ad_personalization',
-  },
-  customConsentTypeName: {
-    'custom': data.customName
-  }
+	defaultConsentTypesNames: {
+		'ad_storage': 'ad_storage',
+		'analytics_storage': 'analytics_storage',
+		'functionality_storage': 'functionality_storage',
+		'personalization_storage': 'personalization_storage',
+		'security_storage': 'security_storage',
+		'ad_user_data': 'ad_user_data',
+		'ad_personalization': 'ad_personalization'
+	},
+	customConsentTypeName: {
+		'custom': data.customName
+	}
 };
+const nowEvent = copyFromDataLayer('event');
 
-// 取得処理
-switch (data.selectTarget) {
-  case 'all':
-    const defaultConsentTypesNames = Object.keys(consentTypesNames.defaultConsentTypesNames);
-    const canQueryAllDefaultConsentTypes = defaultConsentTypesNames.every((consentType) => {
-      return queryPermission('access_consent', consentType, 'read');
-    });
-  	if (canQueryAllDefaultConsentTypes) {
-      return defaultConsentTypesNames.reduce((obj, consentType) => {
-        obj[consentType] = isConsentGranted(consentType);
-        return obj;
-      }, {});
-  	}
-  	break;
-  default:
-    const specificConsentType = 
-            consentTypesNames.defaultConsentTypesNames[data.getType] ||
-            consentTypesNames.customConsentTypeName[data.getType];
-    const canQuerySpecificConsentType = queryPermission('access_consent', specificConsentType, 'read');
-  	if (canQuerySpecificConsentType) {
-      return isConsentGranted(specificConsentType);
-    }
+// -------- getting
+if(nowEvent !== 'gtm.init_consent'){
+	// ---- normal
+	switch (data.selectTarget) {
+		case 'all':
+			const defaultConsentTypesNames = Object.keys(consentTypesNames.defaultConsentTypesNames);
+			const canQueryAllDefaultConsentTypes = defaultConsentTypesNames.every((consentType) => {
+				return queryPermission('access_consent', consentType, 'read');
+			});
+			if (canQueryAllDefaultConsentTypes) {
+				return defaultConsentTypesNames.reduce((obj, consentType) => {
+					obj[consentType] = isConsentGranted(consentType);
+					return obj;
+				}, {});
+			}
+			break;
+		default:
+			const specificConsentType = 
+				consentTypesNames.defaultConsentTypesNames[data.getType] ||
+				consentTypesNames.customConsentTypeName[data.getType];
+			const canQuerySpecificConsentType = queryPermission('access_consent', specificConsentType, 'read');
+			if (canQuerySpecificConsentType) {
+				return isConsentGranted(specificConsentType);
+			}
+	}
+}else{
+	// ---- gtm.init_consent
+	return undefined;
 }
 
-// 例外処理
-return undefined;
+// -------- error
+return false;
 
 
 ___WEB_PERMISSIONS___
@@ -421,6 +431,39 @@ ___WEB_PERMISSIONS___
       "isEditedByUser": true
     },
     "isRequired": true
+  },
+  {
+    "instance": {
+      "key": {
+        "publicId": "read_data_layer",
+        "versionId": "1"
+      },
+      "param": [
+        {
+          "key": "allowedKeys",
+          "value": {
+            "type": 1,
+            "string": "specific"
+          }
+        },
+        {
+          "key": "keyPatterns",
+          "value": {
+            "type": 2,
+            "listItem": [
+              {
+                "type": 1,
+                "string": "event"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "clientAnnotations": {
+      "isEditedByUser": true
+    },
+    "isRequired": true
   }
 ]
 
@@ -550,3 +593,5 @@ scenarios:
 ___NOTES___
 
 Created on 2021/6/21 12:59:49
+
+
