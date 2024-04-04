@@ -29,6 +29,8 @@ Return value: `true/false`
 
 Get the status of the selected agreement type as true or false.
 
-**Note**: You can also get the status of custom consent types other than the five default consent types.  
+**Note**: You can also get the status of custom consent types other than the 7 default consent types.  
 However, in this case, **you need to add the custom consent type you want to retrieve to the access_consent permission of the template with read permission**.
 
+**Note**: In the event of "gtm.init_consent", the value is "undefined".  
+In addition, the value will be "false" if it cannot be obtained due to some error (e.g., lack of permissions).
