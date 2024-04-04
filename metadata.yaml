@@ -17,12 +17,12 @@ documentation: "https://github.com/Ayudante/gtm-consent-state/blob/main/README.m
 versions:
   # Latest version
   - sha: 355182c84e0d0036f8b1b4fa68ce503bcd3d807f
-    changenotes:
+    changeNotes: |2
       The error message "A tag read consent state before the default was set" has been addressed. This will prevent the value from being retrieved when "gtm.init_consent".
       Default values have been changed. The value is "undefined" if not obtained by event "gtm.init_consent" and "false" in other errors.
   # Older versions
   - sha: 8ec9f9fea64ad1b0420e71696b5eaf2f789e6efb
-    changenotes:
+    changeNotes: |2
       Added ad_personalization and ad_user_data.
       Fixed functionality_storage.
   - sha: 78df2c93fc26f5c6cbcb1fc03e5bbf9580744360
